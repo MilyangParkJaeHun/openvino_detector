@@ -1,3 +1,10 @@
+"""
+    Ssd.py
+
+    Author: Park Jaehun
+    Refactoring: Park Jaehun , 2021.09.18
+"""
+
 from Model.ModelParser import ModelParser
 
 class Ssd(ModelParser):
