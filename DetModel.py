@@ -1,4 +1,9 @@
-#!/usr/bin/env python3
+"""
+    DetModel.py
+
+    Author: Park Jaehun
+    Refactoring: Park Jaehun , 2021.09.18
+"""
 
 from numpy.core.numeric import outer
 from Model.ModelParser import ModelParser
@@ -30,7 +35,6 @@ class OpenvinoDet():
 
         self.model_bin = glob.glob(os.path.join(self.model_path, '*.bin'))
         self.model_xml = glob.glob(os.path.join(self.model_path, '*.xml'))
-        
         if not self.model_bin or not self.model_xml:
             print("can not find IR model")
             sys.exit(1)
@@ -51,17 +55,16 @@ class OpenvinoDet():
         self.net = self.ie.read_network(model=self.model_xml, weights=self.model_bin)
         self.input_blob = next(iter(self.net.inputs))
         self.out_blob = next(iter(self.net.outputs))
-        print('input  : ', self.input_blob)
-        print('output : ', self.out_blob)
-        print("Loading IR to the plugin...")
+        self.n, self.c, self.h, self.w = self.net.inputs[self.input_blob].shape
 
+        print("Loading IR to the plugin...")
         self.exec_net = self.ie.load_network(
             network=self.net, device_name=self.device, num_requests=self.num_requests)
-        self.n, self.c, self.h, self.w = self.net.inputs[self.input_blob].shape
+        print("Successfully load")
 
     def inference(self, frame):
         """
-        Get the infrence results from Object Detection Model
+        Inference of the detection model with frame as input.
         
         Because the Object Detection Model works asynchronously, 
         the current result is the detection result of the previous frame
@@ -78,19 +81,10 @@ class OpenvinoDet():
             output = self._model.get_output(self)
             dets = self._model.parse_output(self, output)
             dets = self.filter_dets(dets)
-            dets = self.validation_dets(dets)
+            dets = self.cut_outer_dets(dets)
         self.switching_request_id()
         self.update_frame(frame)
         return dets
-        # print("Detect objects in current frame")
-
-    @property
-    def model_parser(self) -> ModelParser:
-        return self._model
-    
-    @model_parser.setter
-    def model_parser(self, model_parser: ModelParser) -> None:
-        self._model = model_parser
 
     def clear(self):
         """
@@ -98,7 +92,6 @@ class OpenvinoDet():
         """
         self.exec_net = self.ie.load_network(network=self.net, device_name=self.device, num_requests=self.num_requests)
         print("Successfully reload!!!")
-        # print("Clear detection results buffer")
 
     def update_frame(self, frame):
         """
@@ -131,25 +124,10 @@ class OpenvinoDet():
 
         return self.before_frame
 
-    def to_dets(self, dict):
-        """
-        Convert the detection results format 
-
-        from dict format to dets format used for MOTChallengeEvalKit
-
-        dict : [class_id, xmin, ymin, xmax, ymax, confidence]
-        dets : [frame, id, bb_left, bb_top, bb_width, bb_height, conf, x, y, z]
-        """
-        dets = {}
-        dets['bb_left']     = dict['xmin']
-        dets['bb_top']      = dict['ymin']
-        dets['bb_width']    = dict['xmax'] - dict['xmin']
-        dets['bb_height']   = dict['ymax'] - dict['ymin']
-        dets['conf']        = dict['confidence']
-
-        return dets
-
     def intersection_over_union(self, box_1, box_2):#add DIOU-NMS support
+        """
+        Calculate IOU score between two bounding boxes
+        """
         width_of_overlap_area = min(box_1['xmax'], box_2['xmax']) - max(box_1['xmin'], box_2['xmin'])
         height_of_overlap_area = min(box_1['ymax'], box_2['ymax']) - max(box_1['ymin'], box_2['ymin'])
 
@@ -170,6 +148,9 @@ class OpenvinoDet():
         return area_of_overlap / area_of_union-pow(rh02/c_area,0.6)
 
     def preprocess_frame(self, frame):
+        """
+        Preprocess frame according to input format of detector model.
+        """
         in_frame = cv2.resize(frame, (self.w, self.h),
                             interpolation=cv2.INTER_CUBIC)
         in_frame = in_frame.transpose((2, 0, 1))
@@ -178,6 +159,12 @@ class OpenvinoDet():
         return in_frame
     
     def filter_dets(self, dets):
+        """
+        Filter only values ​​to be used in detection results.
+        1. Apply NMS(Non Maximum Suppression).
+        2. Apply probability threshold.
+        3. Apply class id filtering.
+        """
         dets = sorted(dets, key=lambda det : det['confidence'], reverse=True)
         for i in range(len(dets)):
             if dets[i]['confidence'] == 0:
@@ -187,7 +174,10 @@ class OpenvinoDet():
                     dets[j]['confidence'] = 0
         return tuple(det for det in dets if (det['confidence'] >= self.prob_threshold and det['class_id'] == 0))
 
-    def validation_dets(self, dets):
+    def cut_outer_dets(self, dets):
+        """
+        Prevent bounding box from exceeding frame size.
+        """
         for det in dets:
             det['xmax'] = min(det['xmax'], self.img_height)
             det['ymax'] = min(det['ymax'], self.img_width)
@@ -197,4 +187,25 @@ class OpenvinoDet():
         return dets
     
     def switching_request_id(self):
+        """
+        Switch id for async detection mode.
+        """
         self.cur_request_id, self.next_request_id = self.next_request_id, self.cur_request_id
+
+    def to_dets(self, dict):
+        """
+        Convert the detection results format 
+
+        from dict format to dets format used for MOTChallengeEvalKit
+
+        dict : [class_id, xmin, ymin, xmax, ymax, confidence]
+        dets : [frame, id, bb_left, bb_top, bb_width, bb_height, conf, x, y, z]
+        """
+        dets = {}
+        dets['bb_left']     = dict['xmin']
+        dets['bb_top']      = dict['ymin']
+        dets['bb_width']    = dict['xmax'] - dict['xmin']
+        dets['bb_height']   = dict['ymax'] - dict['ymin']
+        dets['conf']        = dict['confidence']
+
+        return dets
