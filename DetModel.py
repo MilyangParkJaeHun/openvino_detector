@@ -179,8 +179,8 @@ class OpenvinoDet():
         Prevent bounding box from exceeding frame size.
         """
         for det in dets:
-            det['xmax'] = min(det['xmax'], self.img_height)
-            det['ymax'] = min(det['ymax'], self.img_width)
+            det['xmax'] = min(det['xmax'], self.img_width)
+            det['ymax'] = min(det['ymax'], self.img_height)
             det['xmin'] = max(det['xmin'], 0)
             det['ymin'] = max(det['ymin'], 0)
 
