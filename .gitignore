@@ -3,3 +3,10 @@ __pycache__/
 
 # ignore swap file
 *.swp
+
+# ignore tar file
+*.tar.xz
+
+# ignore weight file
+*.bin
+*.xml
