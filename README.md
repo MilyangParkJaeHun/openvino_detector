@@ -1,5 +1,9 @@
 # openvino_detector
-Object Detectio using OpenVINO
+Object Detection using OpenVINO.
+
+
+Supports YOLO and SSD type detection model.
+
 By Park JaeHun
 
 ## Environments
