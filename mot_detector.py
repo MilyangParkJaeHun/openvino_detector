@@ -1,5 +1,5 @@
 """
-    detector.py
+    mot_detector.py
 
     Author: Park Jaehun
     Refactoring: Park Jaehun , 2021.09.19
