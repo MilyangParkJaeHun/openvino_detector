@@ -163,7 +163,7 @@ class OpenvinoDet():
         Filter only values ​​to be used in detection results.
         1. Apply NMS(Non Maximum Suppression).
         2. Apply probability threshold.
-        3. Apply class id filtering.
+        3. Apply class id filtering. (only detect person)
         """
         dets = sorted(dets, key=lambda det : det['confidence'], reverse=True)
         for i in range(len(dets)):
