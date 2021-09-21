@@ -21,7 +21,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Object Detection demo')
     parser.add_argument('--model_type', help='Type of object detection model : [ssd / yolo]', type=str, default='')
     parser.add_argument('--model_path', help='Path to object detection model weight file', type=str, default='IR/Yolo/coco')
-    parser.add_argument('--img_path', help='Path to input images.', type=str, default='../mot_benchmark')
+    parser.add_argument('--img_path', help='Path to input images.', type=str, default='mot_benchmark')
     parser.add_argument('--device', help='Device for inference', type=str, default='GPU')
     parser.add_argument("--prob_threshold", help='Minimum probability for detection.', type=float, default=0.5)
     parser.add_argument('--display', dest='display', help='Display online tracker output (slow) [False]', action='store_true')
