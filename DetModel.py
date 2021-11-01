@@ -6,7 +6,7 @@
 """
 
 from numpy.core.numeric import outer
-from Model.ModelParser import ModelParser
+from .Model.ModelParser import ModelParser
 from abc import *
 
 import os

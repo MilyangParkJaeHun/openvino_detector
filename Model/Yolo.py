@@ -5,7 +5,7 @@
     Refactoring: Park Jaehun , 2021.09.18
 """
 
-from Model.ModelParser import ModelParser
+from .ModelParser import ModelParser
 from math import exp as exp
 import numpy as np
 import ngraph as ng
