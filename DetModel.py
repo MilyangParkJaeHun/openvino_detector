@@ -53,9 +53,9 @@ class OpenvinoDet():
         print(self.model_xml)
         print(self.model_bin)
         self.net = self.ie.read_network(model=self.model_xml, weights=self.model_bin)
-        self.input_blob = next(iter(self.net.inputs))
+        self.input_blob = self.net.input_info['inputs'].input_data.name
         self.out_blob = next(iter(self.net.outputs))
-        self.n, self.c, self.h, self.w = self.net.inputs[self.input_blob].shape
+        self.n, self.c, self.h, self.w = self.net.input_info['inputs'].input_data.shape
 
         print("Loading IR to the plugin...")
         self.exec_net = self.ie.load_network(
@@ -69,7 +69,7 @@ class OpenvinoDet():
         Because the Object Detection Model works asynchronously, 
         the current result is the detection result of the previous frame
         
-        output : [[class_id, xmin, ymin, xmax, ymax, confidence], ... ]
+        output : [{xmin, ymin, xmax, ymax, class_id, confidence}, ... ]
         """
         self.img_height = frame.shape[0]
         self.img_width = frame.shape[1]
@@ -172,7 +172,7 @@ class OpenvinoDet():
             for j in range(i + 1, len(dets)):
                 if self.intersection_over_union(dets[i], dets[j]) > self.iou_threshold:
                     dets[j]['confidence'] = 0
-        return tuple(det for det in dets if (det['confidence'] >= self.prob_threshold and det['class_id'] == 0))
+        return tuple(det for det in dets if (det['confidence'] >= self.prob_threshold))
 
     def cut_outer_dets(self, dets):
         """
