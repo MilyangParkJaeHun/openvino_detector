@@ -48,14 +48,15 @@ class OpenvinoDet():
         self.cur_request_id = 0
         self.next_request_id = 1
 
+        print(self.model_path)
         print("Reading IR...")
         self.ie = IECore()
-        print(self.model_xml)
-        print(self.model_bin)
         self.net = self.ie.read_network(model=self.model_xml, weights=self.model_bin)
-        self.input_blob = self.net.input_info['inputs'].input_data.name
+
+        input_name = list(self.net.input_info.keys())[0]
+        self.input_blob = self.net.input_info[input_name].input_data.name
         self.out_blob = next(iter(self.net.outputs))
-        self.n, self.c, self.h, self.w = self.net.input_info['inputs'].input_data.shape
+        self.n, self.c, self.h, self.w = self.net.input_info[input_name].input_data.shape
 
         print("Loading IR to the plugin...")
         self.exec_net = self.ie.load_network(

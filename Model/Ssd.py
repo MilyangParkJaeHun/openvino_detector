@@ -9,12 +9,15 @@ from .ModelParser import ModelParser
 
 class Ssd(ModelParser):
     def get_output(self, model):
-        return model.exec_net.requests[model.cur_request_id].outputs[model.out_blob]
+
+        return model.exec_net.requests[model.cur_request_id].output_blobs
 
     def parse_output(self, model, output):
         src_h, src_w = model.img_height, model.img_width
         dets = list()
-        output = output.flatten()
+
+        output_name = list(output.keys())[0]
+        output = output[output_name].buffer.flatten()
         total_len = int(len(output)/7)
 
         for idx in range(total_len):
