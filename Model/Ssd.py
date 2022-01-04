@@ -5,7 +5,7 @@
     Refactoring: Park Jaehun , 2021.09.18
 """
 
-from .ModelParser import ModelParser
+from ModelParser import ModelParser
 
 class Ssd(ModelParser):
     def get_output(self, model):

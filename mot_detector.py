@@ -111,7 +111,9 @@ if __name__ == "__main__":
                         sys.exit(0)
                     
                     cv2.imwrite(out_img_path, out_frame)
-                    
+    
+    if total_time == 0:
+        raise Exception('No input received')
     print('fps : ', total_frame / total_time)
                     
 
