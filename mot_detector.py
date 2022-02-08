@@ -15,11 +15,12 @@ import time
 from DetModel import OpenvinoDet
 from Model.Yolo import Yolo
 from Model.Ssd import Ssd
+from Model.PedestrianDet import PedestrianDet
 
 def parse_args():
     """Parse input arguments."""
     parser = argparse.ArgumentParser(description='Object Detection demo')
-    parser.add_argument('--model_type', help='Type of object detection model : [ssd / yolo]', type=str, default='')
+    parser.add_argument('--model_type', help='Type of object detection model : [ssd / yolo / ped]', type=str, default='')
     parser.add_argument('--model_path', help='Path to object detection model weight file', type=str, default='IR/Yolo/coco')
     parser.add_argument('--img_path', help='Path to input images.', type=str, default='mot_benchmark')
     parser.add_argument('--device', help='Device for inference', type=str, default='GPU')
@@ -48,8 +49,10 @@ if __name__ == "__main__":
         model = Yolo()
     elif args.model_type == "ssd":
         model = Ssd()
+    elif args.model_type == 'ped':
+        model = PedestrianDet()
     else:
-        print("Supports ssd or yolo as detection models. \n Choose between ssd and yolo!!!")
+        print("Supports ssd or yolo or ped as detection models. \n Choose between ssd / yolo / ped!!!")
         sys.exit(1)
 
     # create Detector instance
